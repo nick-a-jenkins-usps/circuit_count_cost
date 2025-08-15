@@ -1,8 +1,10 @@
-from server import Server
-from temp import Tipne, Site
+""" SDC class is used to capture specfic logic for SDC sites and their unique statuses"""
+import time
 import asyncio
 import pandas as pd
-import time
+from server import Server
+from temp import Tipne, Site
+
 
 class Sdc:
     """
@@ -14,6 +16,7 @@ class Sdc:
         self.site_list: Site = Site()
         self.tipne.get_tipne()
         self.site_list.get_site_list()
+        # Hard coded list determined manually
         self.sdc_fdbs: list= [
                 1589779, 1388480, 1599136, 1578072, 1578792, 1582789, 1599154, 1582791, 1599160,
                 1579662, 1582794, 1578073, 1579657, 1578793, 1599153, 1579664, 1579654, 1582556,
@@ -33,19 +36,23 @@ class Sdc:
         self.sdc_df: pd.DataFrame = pd.DataFrame()
         self.merged_df = asyncio.run(self.main())
         print(self.merged_df.columns)
-    
+
+    """
+        Attempted async function calls to improve run time with network IO operations
+        No known benefit perceived with tests of syncrhonous calls
+    """
     async def get_statuses(self) -> None:
         """
         Runs the server class's get_sdc_site_tracking method to get latest
         vendor statuses for SDC sites.
 
-        returns: None but sets the member attribute sdc_server_status_df 
+        returns: None but sets the member attribute sdc_server_status_df
         to the df of the returned file
         """
         temp_df: pd.DataFrame= self.server.get_sdc_site_tracking()
         temp_df['fdbid'] = temp_df['fdbid'].astype(str)
         self.sdc_server_status_df = temp_df
-    
+
     async def filter_site_list(self):
         """
         Async method to filter to the SDC sites from the site list attribute
@@ -53,23 +60,24 @@ class Sdc:
         returns: None but sets the sdc_df attribute to the trimmed dataframe
         """
         temp_df = self.site_list.site_list_df
-        str_sdc_fdbs = [str(fdb) for fdb in self.sdc_fdbs]
+        # Convert to string for merges. Nulls prevent int casting
+        str_sdc_fdbs = [str(fdb) for fdb in self.sdc_fdbs] 
         self.sdc_df = temp_df[temp_df['fdbid'].isin(str_sdc_fdbs)]
 
     async def main(self, merge_on='fdbid'):
         """
-         call to run the filter_site_list and get_statuses methods. 
+         call to run the filter_site_list and get_statuses methods.
          chosen due to network IO. No time saved however
          returns: pd.DataFrame of the merged sdc_df with the server statuses
         """
         await self.get_statuses()
         await self.filter_site_list()
         return pd.merge(self.sdc_df, self.sdc_server_status_df, on=merge_on, how='left')
-    
+
     def get_counts(self):
         """
         Gets the counts from get_assigned_counts and get_deployed_counts methods
-        and merges the dfs together. 
+        and merges the dfs together.
         returns: pd.DataFrame of the merged counts
         """
 
@@ -85,13 +93,14 @@ class Sdc:
         """
         # nunique() is used to get the number of unique sites for a vendor
         return df.groupby('new_vendor')['fdbid'].nunique().reset_index()
-    
+
     def get_deployed_counts(self, df):
         """
         Calculates deployed sites using the statsues obtained from the server method
 
         returns: pd.DataFrame with deployed counts
         """
+        # vdr_status and vendor status come from Server method
         deployed = df[
             (df['vdr_status_1'].str.lower().str.contains('complete')) |
             (df['vdr_status_2'].str.lower().str.contains('complete')) |
@@ -99,7 +108,7 @@ class Sdc:
         ]
         # nunique() is chosent to get the number of unique sites for vendors
         return deployed.groupby('new_vendor')['fdbid'].nunique().reset_index()
-    
+
     def get_costs(self):
         """
         Calls the leg_costs and cur_costs methods and merges them into one df of costs
@@ -125,7 +134,7 @@ class Sdc:
         returns: pd.DataFrame of current costs
         """
         return df.groupby('new_vendor')['yearly_cost'].sum().reset_index()
-    
+
     def merge_count_costs(self) -> pd.DataFrame:
         """
         Merges the counts and costs into the final product to be used in the table
@@ -133,12 +142,9 @@ class Sdc:
         returns pd.DataFrame for the final table
         """
         return pd.merge(self.get_counts(), self.get_costs(), on='new_vendor', how='left')
-    
+
 
 if __name__ == '__main__':
     start = time.time()
     sdc = Sdc()
-    print(sdc.merge_count_costs())   
-
-
-
+    print(sdc.merge_count_costs())
