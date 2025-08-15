@@ -1,5 +1,5 @@
-from server import Server
-from temp import ClassInterface, Tipne
+from server_class import Server
+from site_tracking import ClassInterface, Tipne
 import pandas as pd
 
 class Plant:
@@ -76,3 +76,7 @@ class Plant:
                 .sum()
                 .reset_index()
         )
+
+if __name__ == '__main__':
+    plant = Plant()
+    print(plant.get_final_plant_df())
