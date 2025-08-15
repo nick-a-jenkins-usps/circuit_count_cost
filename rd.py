@@ -1,4 +1,4 @@
-from temp import ClassInterface
+from site_tracking import ClassInterface
 import pandas as pd
 
 class RD:
@@ -36,7 +36,7 @@ class RD:
         return init_df
 
     def get_phase_cost_counts(self, phase:list):
-        phase_df = self.rd_df[(self.rd_df['phase'].isin(phase)) & (~self.rd_df['fdbid'].isin(self.sdc.sdc_fdbs))]
+        phase_df = self.rd_df[(self.rd_df['phase'].isin(phase)) & (~self.rd_df['fdbid'].isin(self.interface.sdc.sdc_fdbs))]
         count = self.get_vendor_counts(phase_df, 'Count')
         cost = self.get_yearly_cost_by_vendor(phase_df, 'yearly_cost')
         return self.merge_abstract(count, cost)
