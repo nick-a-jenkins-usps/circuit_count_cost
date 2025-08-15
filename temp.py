@@ -196,7 +196,12 @@ class RD:
         self.rd_df = pd.DataFrame()
 
 
-    def filter_by_cutover(self, rd_df):
+    def filter_by_cutover(self, rd_df) -> pd.DataFrame:
+        """
+        Filteres out the dataframed passed in based on the is_cutover column
+
+        returns: pd.DataFrame of cutover sites
+        """
         return rd_df[rd_df["is_cutover"] == True]
 
     def get_vendor_counts(self, rd_df: pd.DataFrame, col_rename: str):
