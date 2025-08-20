@@ -18,14 +18,23 @@ class Plant:
         self.plant_df = self.get_plants()
         self.plants_fdb = []
 
+
+    def filter_to_phase_2(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Abstract logic to filter a dataframe to return phase 2
+
+        returns: pd.DataFrame
+        """
+        return df[df['phase'] == '2']
+
     def get_plants(self):
         """
         gets the plants from the interface object's attribute, merged_sl_tipne
 
         returns: pd.DataFrame
         """
-        return (self.interface.merged_sl_tipne
-                [self.interface.merged_sl_tipne['phase'] == '2']
+        return (
+            self.filter_to_phase_2(self.interface.merged_sl_tipne)
         ).drop_duplicates()
 
 
@@ -39,7 +48,7 @@ class Plant:
         plants: pd.DataFrame = self.tipne.tipne_df
         # Drop old_service_number to make circuits that are the same appear the same
         # Drop duplicates to drop the same circuits
-        plants: pd.DataFrame = (plants[plants['phase'] == '2']
+        plants: pd.DataFrame = (self.filter_to_phase_2(plants)
                   .drop(['old_service_number'], axis=1)
                   .drop_duplicates()
         )
@@ -69,7 +78,7 @@ class Plant:
         """
         completed_statuses: list = (['Cutover One Circuit Only - Complete',
                                      'Cutover Full - Complete'])
-        completed_statuses_lower: list = [status.lower() for status in completed_statuses]
+        completed_statuses_lower: list = [status.lower() for status in completed_statuses] # Lowercase for matching
         completed_df: pd.DataFrame = df[df['status'].str.lower().isin(completed_statuses_lower)]
         return completed_df.groupby('new_provider')['fdbid'].count().reset_index()
 
@@ -80,7 +89,9 @@ class Plant:
         returns pd.DataFrame
         """
         site_list: pd.DataFrame = self.interface.site_list.site_list_df
-        plant_list: pd.DataFrame = site_list[site_list['fdbid'].isin(self.plant_df)]
+
+        # self.plants_fdb houses the phase 2 fdbids needed for filtering
+        plant_list: pd.DataFrame = site_list[site_list['fdbid'].isin(self.plants_fdb)]
         return self.merge_costs(plant_list)
 
     def merge_costs(self, df: pd.DataFrame)-> pd.DataFrame:
@@ -108,7 +119,7 @@ class Plant:
                 .reset_index()
         )
 
-    def get_legacy_cost(self, df):
+    def get_legacy_cost(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Groups the dataframe by vendor and sums the legacy_yearly_cost"
 
@@ -119,7 +130,7 @@ class Plant:
                 .reset_index()
         )
 
-    def get_final_plant_df(self):
+    def get_final_plant_df(self) -> pd.DataFrame:
         """
         Runs the Plant class to get counts and cost for sites
 
@@ -133,4 +144,4 @@ class Plant:
 
 if __name__ == '__main__':
     plant = Plant()
-    print(plant.plant_df.columns)
+    print(plant.get_final_plant_df())
