@@ -7,7 +7,10 @@ class RD:
         self.interface.add_cutover_column()
         self.rd_df = pd.DataFrame()
 
-
+    @staticmethod
+    def merge_abstract(df_1, df_2):
+        return pd.merge(df_1, df_2, on='new_provider', how='outer')
+    
     def filter_by_cutover(self, rd_df):
         return rd_df[rd_df["is_cutover"] == True]
 
@@ -51,12 +54,23 @@ class RD:
         return self.get_yearly_cost_by_vendor(self.rd_df, 'legacy_yearly_cost')
     
     def merge(self):
+        self.get_rd_df()
         assigned, deployed = self.get_assigned_deployed_counts()
         legacy_cost = self.get_legacy_costs()
         counts = pd.merge(assigned, deployed, on='new_provider', how='left')
         counts_cost = pd.merge(counts, legacy_cost, on='new_provider', how='left')
-        return self.merge_abstract(counts_cost, self.run_phases()).fillna(0)
+        return (self.merge_abstract(counts_cost, self.run_phases())
+                .fillna(0)
+                .rename(columns={'Count_x': 'Single Transport Count',
+                                 'yearly_cost_x': 'Single Transport Cost',
+                                 'Count_y': 'LEO Count',
+                                 'yearly_cost_y': 'LEO Cost',
+                                 'Count': 'Broadband Count',
+                                 'yearly_cost': 'Broadband Cost'})
+        )
     
-    @staticmethod
-    def merge_abstract(df_1, df_2):
-        return pd.merge(df_1, df_2, on='new_provider', how='outer')
+    
+    
+if __name__ == '__main__':
+    rd = RD()
+    print(rd.merge())
