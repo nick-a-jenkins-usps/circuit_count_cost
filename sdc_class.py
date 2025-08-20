@@ -35,16 +35,14 @@ class Sdc:
         self.sdc_server_status_df: pd.DataFrame = pd.DataFrame()
         self.sdc_df: pd.DataFrame = pd.DataFrame()
         self.merged_df = asyncio.run(self.main())
-        print(self.merged_df.columns)
 
-    """
-        Attempted async function calls to improve run time with network IO operations
-        No known benefit perceived with tests of syncrhonous calls
-    """
     async def get_statuses(self) -> None:
         """
         Runs the server class's get_sdc_site_tracking method to get latest
         vendor statuses for SDC sites.
+
+        Attempted async function calls to improve run time with network IO operations
+        No known benefit perceived with tests of syncrhonous calls
 
         returns: None but sets the member attribute sdc_server_status_df
         to the df of the returned file
@@ -109,7 +107,7 @@ class Sdc:
         # nunique() is chosent to get the number of unique sites for vendors
         return deployed.groupby('new_vendor')['fdbid'].nunique().reset_index()
 
-    def get_costs(self):
+    def get_costs(self) -> pd.DataFrame:
         """
         Calls the leg_costs and cur_costs methods and merges them into one df of costs
 
