@@ -25,7 +25,7 @@ class Server:
 
         returns: File Path.
         """
-        server = Path(r"\\eagnmntwe1660\TelcoInv")
+        server = Path(r"/Volumes/TelcoInv")
         potential_files: list = ([file for file in server.iterdir()
                                   if param.lower() in str(file).lower() and
                                   'leo' not in str(file).lower()]
@@ -122,5 +122,6 @@ class Server:
 
 if __name__ == '__main__':
     server_ = Server()
-    temp = server_.run()
+    temp = server_.get_sdc_site_tracking()
+    print(temp)
     # print(df)
