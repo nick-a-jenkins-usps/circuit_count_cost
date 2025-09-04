@@ -13,7 +13,7 @@ class FileManager:
 
     """
     def __init__(self):
-        self.splunk_path = "C:/Users/FDYPK0/OneDrive - USPS/NCP WAN/Splunk/"
+        self.splunk_path = "/Users/FDYPK0/OneDrive - USPS/NCP WAN/Splunk/"
         self.site_list_path = 'site_list.csv'
         self.tipne_path = 'tipne.csv'
 
