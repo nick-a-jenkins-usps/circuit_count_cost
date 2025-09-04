@@ -141,6 +141,9 @@ class Plant:
         return (pd.merge(count, costs, left_on='new_provider', right_on='new_vendor', how='left')
                 .drop(['new_vendor'], axis=1)
         )
+    
+    def dummy(self): 
+        print('testing github')
 
 if __name__ == '__main__':
     plant = Plant()
